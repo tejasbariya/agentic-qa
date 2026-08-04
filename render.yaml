@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: sentinelqa-api
+    runtime: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PROJECT_NAME
+        value: "SentinelQA"
+      - key: API_V1_STR
+        value: "/api/v1"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sentinelqa-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: sentinelqa-redis
+          property: connectionString
+
+  - type: redis
+    name: sentinelqa-redis
+    plan: free
+    maxmemoryPolicy: noeviction
+
+databases:
+  - name: sentinelqa-db
+    plan: free
+    databaseName: sentinelqa
+    postgresMajorVersion: "16"
